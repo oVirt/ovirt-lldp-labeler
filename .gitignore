@@ -1,0 +1,20 @@
+# IDE files
+###########################
+.settings
+.project
+.classpath
+.factorypath
+.externalToolBuilders
+.checkstyle
+maven-eclipse.xml
+.pmd
+*.ipr
+*.iml
+.idea
+.pydevproject
+
+# python files
+###########################
+*.pyo
+*.pyc
+__pycache__
