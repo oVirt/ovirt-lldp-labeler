@@ -1,50 +1,50 @@
+from __future__ import print_function
+
+import config
 import api_access as api
 import lldp_utils as utils
+
+CLUSTER_QUERY_NAME = 'cluster'
 
 
 def _get_engine_service():
     return api.connection.system_service()
 
 
-def _get_host_interfaces_service(hosts_service, hostId):
-    return hosts_service.host_service(hostId).nics_service()
+def _get_all_hosts(filtered_by_cluster=True):
+    filter_query = ''
+    if filtered_by_cluster:
+        filter_query = utils.get_or_query(CLUSTER_QUERY_NAME, config.get_clusters_from_config())
+
+    return _get_engine_service().hosts_service().list(search=filter_query)
 
 
-def _get_all_lldp_info_dictionary():
-    all_lldp = {}
+def _get_host_interfaces_service(hosts_service, host_id):
+    return hosts_service.host_service(host_id).nics_service()
+
+
+def _get_lldp_for_host(host_id):
     host_service = _get_engine_service().hosts_service()
-    for host in host_service.list():
-        nics_service = _get_host_interfaces_service(host_service, host.id)
-        host_lldps = {}
-        for nic in nics_service.list():
-            host_lldps.update({nic.id: _get_lldp_for_nic(nics_service.nic_service(nic.id))})
-        all_lldp.update({host.id: host_lldps})
-    return all_lldp
+    lldps = {}
+    nics_service = _get_host_interfaces_service(host_service, host_id)
+    for nic in nics_service.list():
+        lldps.update({nic.id: _get_lldp_for_nic(nics_service.nic_service(nic.id))})
+    return lldps
 
 
-def _get_all_lldp_info_dictionary_filtered(lldps_dict):
-    filtered_dict = {}
-    for hostId, host_lldps in lldps_dict.items():
-        filtered_host = {}
-        for nicId, tlvs in host_lldps.items():
-            filtered_host.update({nicId: utils.filter_vlan_tag(tlvs)})
-        filtered_dict.update({hostId: filtered_host})
-    return filtered_dict
-
-
-def _get_lldp_for_nic(nic_service):
+def _get_lldp_for_nic(nic_service, vlan_only=True):
     try:
-        return nic_service.link_layer_discovery_protocol_elements_service().list()
+        lldp_list = nic_service.link_layer_discovery_protocol_elements_service().list()
+        if vlan_only:
+            lldp_list = utils.filter_vlan_tag(lldp_list)
+        return lldp_list
     except Exception as ex:
-        print ex.message
+        print(ex.message)
         return []
 
 
 if __name__ == "__main__":
-    lldps_filtered_dict = _get_all_lldp_info_dictionary_filtered(_get_all_lldp_info_dictionary())
-    for hostId, host_lldps in lldps_filtered_dict.items():
-        print "-----------------------------------------------------------"
-        print "Host: " + hostId
-        print "-----------------------------------------------------------"
-        for nicId, filtered_tlvs in host_lldps.items():
-            print "NIC: " + nicId + " -> " + "".join(utils.create_label_candidates(filtered_tlvs))
+    for host in _get_all_hosts():
+        lldps = _get_lldp_for_host(host.id)
+        for nic_id, lldp in lldps.items():
+            print(nic_id + ': ' + lldp)
