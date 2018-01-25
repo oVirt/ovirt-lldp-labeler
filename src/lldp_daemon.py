@@ -1,7 +1,9 @@
 from __future__ import print_function
 
-import config
+from ovirtsdk4.types import NetworkLabel
+
 import api_access as api
+import config
 import lldp_utils as utils
 
 CLUSTER_QUERY_NAME = 'cluster'
@@ -19,14 +21,13 @@ def _get_all_hosts(filtered_by_cluster=True):
     return _get_engine_service().hosts_service().list(search=filter_query)
 
 
-def _get_host_interfaces_service(hosts_service, host_id):
-    return hosts_service.host_service(host_id).nics_service()
+def _get_host_interfaces_service(host_id):
+    return _get_engine_service().hosts_service().host_service(host_id).nics_service()
 
 
 def _get_lldp_for_host(host_id):
-    host_service = _get_engine_service().hosts_service()
     lldps = {}
-    nics_service = _get_host_interfaces_service(host_service, host_id)
+    nics_service = _get_host_interfaces_service(host_id)
     for nic in nics_service.list():
         lldps.update({nic.id: _get_lldp_for_nic(nics_service.nic_service(nic.id))})
     return lldps
@@ -38,13 +39,50 @@ def _get_lldp_for_nic(nic_service, vlan_only=True):
         if vlan_only:
             lldp_list = utils.filter_vlan_tag(lldp_list)
         return lldp_list
-    except Exception as ex:
+    except api.sdk.Error as ex:
         print(ex.message)
         return []
 
 
-if __name__ == "__main__":
+def _get_nic_label_service(host_id, nic_id):
+    return _get_host_interfaces_service(host_id).nic_service(nic_id).network_labels_service()
+
+
+def _attach_label(host_id, nic_id, label):
+    _get_nic_label_service(host_id, nic_id).add(NetworkLabel(id=label))
+
+
+def _detach_label(host_id, nic_id, label):
+    _get_nic_label_service(host_id, nic_id).label_service(label).remove()
+
+
+def _is_label_present_on_host(host_id, label):
+    nics = _get_host_interfaces_service(host_id).list()
+    for nic in nics:
+        attached_labels = [attached_label.id for attached_label in _get_nic_label_service(host_id, nic.id).list()]
+        if attached_labels.__len__() > 0 and label in attached_labels:
+            return nic.id
+    return None
+
+
+def _create_label_candidates_and_assign(host_id, nic_id, lldps):
+    label_candidates = utils.create_label_candidates(lldps)
+    for label_candidate in label_candidates:
+        nic_with_label = _is_label_present_on_host(host_id, label_candidate)
+        if not (nic_with_label is None or nic_with_label is nic_id):
+            if not config.get_is_collison_ignored():
+                _detach_label(host_id, nic_with_label, label_candidate)
+                _attach_label(host_id, nic_id, label_candidate)
+        elif nic_with_label is None:
+            _attach_label(host_id, nic_id, label_candidate)
+
+
+def _run_labeler():
     for host in _get_all_hosts():
         lldps = _get_lldp_for_host(host.id)
         for nic_id, lldp in lldps.items():
-            print(nic_id + ': ' + lldp)
+            _create_label_candidates_and_assign(host.id, nic_id, lldp)
+
+
+if __name__ == "__main__":
+    _run_labeler()
