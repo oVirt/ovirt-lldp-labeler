@@ -1,9 +1,12 @@
 import ovirtsdk4 as sdk
 
+connection = None
 
-connection = sdk.Connection(
-    url='http://ovirt-engine:8080/ovirt-engine/api',
-    username='admin@internal',
-    password='123456',
-)
 
+def init_connection(url, username, password):
+    global connection
+    connection = sdk.Connection(
+        url=url,
+        username=username,
+        password=password,
+    )

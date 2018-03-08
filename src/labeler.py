@@ -70,19 +70,23 @@ def _create_label_candidates_and_assign(host_id, nic_id, lldps):
     for label_candidate in label_candidates:
         nic_with_label = _is_label_present_on_host(host_id, label_candidate)
         if not (nic_with_label is None or nic_with_label is nic_id):
-            if not config.get_is_collison_ignored():
-                _detach_label(host_id, nic_with_label, label_candidate)
-                _attach_label(host_id, nic_id, label_candidate)
+            _detach_label(host_id, nic_with_label, label_candidate)
+            _attach_label(host_id, nic_id, label_candidate)
         elif nic_with_label is None:
             _attach_label(host_id, nic_id, label_candidate)
 
 
-def _run_labeler():
+def run_labeler():
     for host in _get_all_hosts():
         lldps = _get_lldp_for_host(host.id)
         for nic_id, lldp in lldps.items():
             _create_label_candidates_and_assign(host.id, nic_id, lldp)
 
 
+def init_labeler():
+    api.init_connection(config.get_api_url(), config.get_api_username(), config.get_api_password())
+
+
 if __name__ == "__main__":
-    _run_labeler()
+    init_labeler()
+    run_labeler()
