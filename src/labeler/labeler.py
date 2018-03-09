@@ -60,7 +60,7 @@ def _is_label_present_on_host(host_id, label):
     nics = _get_host_interfaces_service(host_id).list()
     for nic in nics:
         attached_labels = [attached_label.id for attached_label in _get_nic_label_service(host_id, nic.id).list()]
-        if attached_labels.__len__() > 0 and label in attached_labels:
+        if len(attached_labels) > 0 and label in attached_labels:
             return nic.id
     return None
 
@@ -83,10 +83,7 @@ def run_labeler():
             _create_label_candidates_and_assign(host.id, nic_id, lldp)
 
 
-def init_labeler():
-    api.init_connection(config.get_api_url(), config.get_api_username(), config.get_api_password())
-
-
-if __name__ == "__main__":
-    init_labeler()
-    run_labeler()
+def init_labeler(username=None, password=None):
+    username = username if username is not None else config.get_api_username()
+    password = password if password is not None else config.get_api_password()
+    api.init_connection(config.get_api_url(), username, password)
