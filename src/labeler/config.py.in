@@ -1,7 +1,7 @@
 import ConfigParser
 
-_LABELER_CONFIG_FILE = '../etc/ovirt-lldp-labeler.conf'
-_CREDENTIALS_CONFIG_FILE = '../etc/ovirt-lldp-credentials.conf'
+_LABELER_CONFIG_FILE = '@LABELER_CONFIG@'
+_CREDENTIALS_CONFIG_FILE = '@LABELER_CONFIG_CREDENTIALS@'
 
 _CREDENTIALS_SECTION = 'credentials'
 _LABELER_SECTION = 'labeler'
