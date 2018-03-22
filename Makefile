@@ -15,28 +15,33 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
-
+VERSION=0.9.0
 NAME=ovirt-lldp-labeler
 GIT_VERSION=$(shell git rev-parse --short HEAD)
-DIR_NAME=$(NAME).git$(GIT_VERSION)
 BUILD=build
+DIST_DIR=$(NAME)-$(VERSION)
+DIST_FILE=$(NAME)-$(VERSION).tar.gz
+RPM_SOURCE=$(shell rpm --eval %_sourcedir)
+
+all:
+	@echo "Usage is make rpm"
 
 
+install:
+	python -m compileall .
+	python -O -m compileall .
+	install -d $(DESTDIR)/etc/$(NAME)/conf.d
+	install -m 644 -t $(DESTDIR)/etc/$(NAME)/conf.d/ etc/ovirt-lldp-labeler.conf
+	install -m 600 -t $(DESTDIR)/etc/$(NAME)/conf.d/ etc/ovirt-lldp-credentials.conf
 
-install: build
-	install -d $(DESTDIR)/etc/$(DIR_NAME)/conf.d
-	install -m 644 -t $(DESTDIR)/etc/$(DIR_NAME)/conf.d/ etc/ovirt-lldp-labeler.conf
-	install -m 600 -t $(DESTDIR)/etc/$(DIR_NAME)/conf.d/ etc/ovirt-lldp-credentials.conf
-
-	install -d $(DESTDIR)/usr/share/$(DIR_NAME)/labeler
-	install -m 644 -t $(DESTDIR)/usr/share/$(DIR_NAME)/labeler ${BUILD}/labeler/*.py*
-	install -m 644 -t $(DESTDIR)/usr/share/$(DIR_NAME)/ ${BUILD}/cli/*.py*
-	make clean-build
+	install -d $(DESTDIR)/usr/share/$(NAME)/labeler
+	install -m 644 -t $(DESTDIR)/usr/share/$(NAME)/labeler labeler/*.py*
+	install -m 644 -t $(DESTDIR)/usr/share/$(NAME)/ cli/*.py*
 
 
 
 template:
-	find ${BUILD} -iname '*.in' | while read f; do \
+	find $(BUILD) -iname '*.in' | while read f; do \
 		sed \
 		-e "s|@LABELER_CONFIG@|$(DESTDIR)/etc/$(DIR_NAME)/conf.d/ovirt-lldp-labeler.conf|g" \
 		-e "s|@LABELER_CONFIG_CREDENTIALS@|$(DESTDIR)/etc/$(DIR_NAME)/conf.d/ovirt-lldp-credentials.conf|g" \
@@ -46,11 +51,12 @@ template:
 
 
 build:
-	install -d ${BUILD}
-	cp -R src/* ${BUILD}
+	mkdir -p $(BUILD)/$(DIST_DIR)/etc
+	cp -R src/* $(BUILD)/$(DIST_DIR)
+	cp -R etc/* $(BUILD)/$(DIST_DIR)/etc
 	make template
 
-clear:
+clean:
 	rm -rf $(DESTDIR)/etc/ovirt-lldp-labeler*
 	rm -rf $(DESTDIR)/usr/share/ovirt-lldp-labeler*
 ifdef DESTDIR
@@ -58,4 +64,24 @@ ifdef DESTDIR
 endif
 
 clean-build:
-	rm -rf ${BUILD}
+	rm -rf $(BUILD)
+
+dist: build
+	cp Makefile $(BUILD)/$(DIST_DIR)/
+
+	cp LICENSE $(BUILD)/$(DIST_DIR)/
+	cp AUTHORS $(BUILD)/$(DIST_DIR)/
+	cp ovirt-lldp-labeler.spec.in $(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
+	sed -i \
+    		-e s/@GIT_VERSION@/$(GIT_VERSION)/ \
+    		-e s/@VERSION@/$(VERSION)/ \
+    		$(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
+
+	tar -zcf $(DIST_FILE) -C $(BUILD) $(DIST_DIR)
+	make clean-build
+
+rpm: dist
+	mkdir -p $(RPM_SOURCE)
+	cp $(DIST_FILE) $(RPM_SOURCE)
+	rpmbuild -ta $(DIST_FILE)
+	rm -rf $(DIST_FILE)
