@@ -43,8 +43,8 @@ install:
 template:
 	find $(BUILD) -iname '*.in' | while read f; do \
 		sed \
-		-e "s|@LABELER_CONFIG@|$(DESTDIR)/etc/$(DIR_NAME)/conf.d/ovirt-lldp-labeler.conf|g" \
-		-e "s|@LABELER_CONFIG_CREDENTIALS@|$(DESTDIR)/etc/$(DIR_NAME)/conf.d/ovirt-lldp-credentials.conf|g" \
+		-e "s|@LABELER_CONFIG@|$(DESTDIR)/etc/$(NAME)/conf.d/ovirt-lldp-labeler.conf|g" \
+		-e "s|@LABELER_CONFIG_CREDENTIALS@|$(DESTDIR)/etc/$(NAME)/conf.d/ovirt-lldp-credentials.conf|g" \
 		$${f} > "$${f/.in/}"; \
 		rm -rf $${f}; \
 	done;
