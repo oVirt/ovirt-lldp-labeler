@@ -1,0 +1,61 @@
+oVirt Link Layer Discovery Protocol labeler
+===========================================
+
+oVirt LLDP labeler is a service which periodically checks LLDP information for configured clusters. Based on this
+information the labeler tries to find VLAN tag and add label to the corresponding interface. This is standalone service
+which can run on any machine with python oVirt SDK installed.
+
+
+Configuration
+-------------
+
+The configuration of the labeler are splitted in to two config files.
+`etc/ovirt-lldp-labeler/conf.d/ovirt-lldp-credentials.conf` and `etc/ovirt-lldp-labeler/conf.d/ovirt-lldp-labeler.conf`.
+
+
+The configuration files consists of the key value pairs, structured by sections.
+
+# ovirt-lldp-credentials.conf
+
+This file has permissions 0600 which should prevent any security problems.
+
+## Section [credentials]
+
+username:: oVirt engine administrator username +
+_default:_ admin@internal
+
+password:: oVirt engine administrator password +
+_default:_ 123456
+
+
+# ovirt-lldp-labeler.conf
+
+## Section [labeler]
+
+clusters:: List of clusters separated by `,` in this list you can use wildcard e.g. `Cluster*`, which will run labeler
+through all clusters starting with word `Cluster`. +
+_default:_ Def*
+
+api_url:: Full api url for the oVirt engine +
+_default:_ http://ovirt-engine:8080/ovirt-engine/api
+
+# ovirt-lldp-labeler.timer
+
+Systemd file used to configure the periodical timer. It is usually located in `/usr/lib/systemd/system/`.
+
+## Section [Timer]
+
+OnUnitActiveSec:: Time delay for every update +
+_default:_ 1h
+
+
+Building
+--------
+
+For building the project into rpm clone the project `git clone https://github.com/almusil/ovirt-lldp-labeler.git`.
+
+And simply run `make rpm`. Please note that for build to work you need to install `rpm-build` package.
+
+The rpm package should be located in `~/rpmbuild/RPMS/noarch`.
+
+And finally for installation simply run `rpm -i $PATH_TO_RPM`
