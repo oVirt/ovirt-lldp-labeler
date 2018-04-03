@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
-VERSION=0.9.0
+VERSION=0.9.1
 NAME=ovirt-lldp-labeler
 GIT_VERSION=$(shell git rev-parse --short HEAD)
 BUILD=build
@@ -38,6 +38,9 @@ install:
 	install -m 644 -t $(DESTDIR)/usr/share/$(NAME)/labeler labeler/*.py*
 	install -m 644 -t $(DESTDIR)/usr/share/$(NAME)/ cli/*.py*
 
+	install -m 644 -D scripts/ovirt-lldp-labeler.timer $(DESTDIR)/usr/lib/systemd/system/ovirt-lldp-labeler.timer
+	install -m 644 -D scripts/ovirt-lldp-labeler.service $(DESTDIR)/usr/lib/systemd/system/ovirt-lldp-labeler.service
+
 
 
 template:
@@ -51,9 +54,12 @@ template:
 
 
 build:
+	mkdir -p $(BUILD)/$(DIST_DIR)
 	mkdir -p $(BUILD)/$(DIST_DIR)/etc
+	mkdir -p $(BUILD)/$(DIST_DIR)/scripts
 	cp -R src/* $(BUILD)/$(DIST_DIR)
 	cp -R etc/* $(BUILD)/$(DIST_DIR)/etc
+	cp -R scripts/* $(BUILD)/$(DIST_DIR)/scripts
 	make template
 
 clean:

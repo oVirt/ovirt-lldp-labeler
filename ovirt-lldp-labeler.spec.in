@@ -25,6 +25,8 @@ BuildArch:      noarch
 URL:            https://github.com/almusil/ovirt-lldp-labeler
 Source0:        %{name}-%{version}.tar.gz
 
+Requires: python-ovirt-engine-sdk4 >= 4.2.0
+
 BuildRequires: python
 
 %prep
@@ -36,6 +38,17 @@ BuildRequires: python
 rm -rf $RPM_BUILD_ROOT
 %make_install
 
+%post
+%systemd_post ovirt-lldp-labeler.timer
+
+
+%preun
+%systemd_preun ovirt-lldp-labeler.timer
+
+
+%postun
+%systemd_postun_with_restart ovirt-lldp-labeler.timer
+
 %description
 The oVirt Link Layer Discovery Protocol labeler.
 
@@ -43,4 +56,6 @@ The oVirt Link Layer Discovery Protocol labeler.
 %files
 %config(noreplace) %{_sysconfdir}/ovirt-lldp-labeler
 %{_datadir}/ovirt-lldp-labeler
+%{_unitdir}/ovirt-lldp-labeler.timer
+%{_unitdir}/ovirt-lldp-labeler.service
 %license LICENSE
