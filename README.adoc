@@ -37,7 +37,10 @@ through all clusters starting with word `Cluster`. +
 _default:_ Def*
 
 api_url:: Full api url for the oVirt engine +
-_default:_ http://ovirt-engine:8080/ovirt-engine/api
+_default:_ https://ovirt-engine/ovirt-engine/api
+
+ca_file:: Path to the custom certificate file. Leave empty if you don't want to use custom certificate. +
+_default:_
 
 # ovirt-lldp-labeler.timer
 

@@ -32,6 +32,7 @@ def main(args):
     else:
         labeler.init_labeler()
     labeler.run_labeler()
+    labeler.clear_labeler()
 
 
 def _parse_arguments(args):

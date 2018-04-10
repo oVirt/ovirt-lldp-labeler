@@ -101,6 +101,12 @@ def run_labeler():
 
 
 def init_labeler(username=None, password=None):
+    config_ca_file = config.get_ca_file()
+    ca_file = config_ca_file if config_ca_file else None
     username = username if username is not None else config.get_api_username()
     password = password if password is not None else config.get_api_password()
-    api.init_connection(config.get_api_url(), username, password)
+    api.init_connection(config.get_api_url(), username, password, ca_file)
+
+
+def clear_labeler():
+    api.connection.close()

@@ -20,10 +20,11 @@ import ovirtsdk4 as sdk
 connection = None
 
 
-def init_connection(url, username, password):
+def init_connection(url, username, password, ca_file):
     global connection
     connection = sdk.Connection(
         url=url,
         username=username,
         password=password,
+        ca_file=ca_file
     )

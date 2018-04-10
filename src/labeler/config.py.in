@@ -25,6 +25,7 @@ _LABELER_SECTION = 'labeler'
 
 _CLUSTER_CONFIG = 'clusters'
 _API_URL_CONFIG = 'api_url'
+_CA_FILE_CONFIG = 'ca_file'
 
 _API_USERNAME = 'username'
 _API_PASSWORD = 'password'
@@ -51,6 +52,10 @@ def get_api_username():
 
 def get_api_password():
     return _config.get(_CREDENTIALS_SECTION, _API_PASSWORD)
+
+
+def get_ca_file():
+    return _config.get(_LABELER_SECTION, _CA_FILE_CONFIG)
 
 
 def _split_by_separator(value, separator):
