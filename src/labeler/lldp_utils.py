@@ -19,7 +19,8 @@ import itertools
 
 PORT_VLAN_TYPE = 127
 PORT_VLAN_OUI = 0x0080c2
-PORT_VLAN_SUBTYPE = 1
+PORT_VLAN_SUBTYPE = 3
+PROPERTY_VLAN_NAME = "VLAN ID"
 
 LABEL_PREFIX = "lldp_vlan_"
 
@@ -39,7 +40,8 @@ def flat_map(list_to_flat_map):
 def create_label_candidates(tlv_properties):
     label_candidates = []
     for property in tlv_properties:
-        label_candidates.append(LABEL_PREFIX + property.value)
+        if property.name == PROPERTY_VLAN_NAME:
+            label_candidates.append(LABEL_PREFIX + property.value)
     return label_candidates
 
 
