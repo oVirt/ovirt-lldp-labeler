@@ -17,10 +17,11 @@
 # Refer to the README and COPYING files for full details of the license
 from __future__ import print_function
 
+import config
+
 from ovirtsdk4.types import NetworkLabel
 
 import api_access as api
-import config
 import lldp_utils as utils
 
 CLUSTER_QUERY_NAME = 'cluster'
@@ -45,13 +46,40 @@ def _get_host_interfaces_service(host_id):
 def _get_lldp_for_host(host_id):
     lldps = {}
     nics_service = _get_host_interfaces_service(host_id)
-    for nic in nics_service.list():
-        lldps.update({nic.id: _get_lldp_for_nic(nics_service.nic_service(nic.id))})
+    nic_list_without_vlan = _filter_out_vlan_interfaces(nics_service.list())
+    nic_list = _filter_out_bond_slaves(nic_list_without_vlan)
+    for nic in nic_list:
+        if nic.bonding is None:
+            lldps.update({nic.id: _get_lldp_for_nic(nics_service, nic)})
+        else:
+            lldps.update({nic.id: _get_lldp_for_bond_slaves(nics_service, nic)})
     return lldps
 
 
-def _get_lldp_for_nic(nic_service, vlan_only=True):
+# TODO add diff check for the lldp from slaves
+def _get_lldp_for_bond_slaves(nics_service, nic):
+    lldp_list = []
+    for slave in nic.bonding:
+        lldp_list.append(_get_lldp_for_nic(nics_service.nic_service(slave.id)))
+    return utils.flat_map(lldp_list)
+
+
+def _filter_out_vlan_interfaces(nic_list):
+    return [nic for nic in nic_list if nic.vlan is None]
+
+
+def _filter_out_bond_slaves(nic_list):
+    slaves_list = []
+    for nic in nic_list:
+        if nic.bonding is not None:
+            slaves_list.append([slave.id for slave in nic.bonding.slaves])
+    flat_slave_list = utils.flat_map(slaves_list)
+    return [nic for nic in nic_list if nic.id not in flat_slave_list]
+
+
+def _get_lldp_for_nic(nics_service, nic, vlan_only=True):
     try:
+        nic_service = nics_service.nic_service(nic.id)
         lldp_list = nic_service.link_layer_discovery_protocol_elements_service().list()
         if vlan_only:
             lldp_list = utils.filter_vlan_tag(lldp_list)
