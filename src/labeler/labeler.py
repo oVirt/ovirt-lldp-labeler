@@ -60,8 +60,8 @@ def _get_lldp_for_host(host_id):
 def _get_lldp_for_bond_slaves(nics_service, nic):
     lldp_list = []
     for slave in nic.bonding:
-        lldp_list.append(_get_lldp_for_nic(nics_service.nic_service(slave.id)))
-    return utils.flat_map(lldp_list)
+        lldp_list.extend(_get_lldp_for_nic(nics_service.nic_service(slave.id)))
+    return lldp_list
 
 
 def _filter_out_vlan_interfaces(nic_list):
@@ -69,12 +69,11 @@ def _filter_out_vlan_interfaces(nic_list):
 
 
 def _filter_out_bond_slaves(nic_list):
-    slaves_list = []
+    slave_list = []
     for nic in nic_list:
         if nic.bonding is not None:
-            slaves_list.append([slave.id for slave in nic.bonding.slaves])
-    flat_slave_list = utils.flat_map(slaves_list)
-    return [nic for nic in nic_list if nic.id not in flat_slave_list]
+            slave_list.extend([slave.id for slave in nic.bonding.slaves])
+    return [nic for nic in nic_list if nic.id not in slave_list]
 
 
 def _get_lldp_for_nic(nics_service, nic, vlan_only=True):

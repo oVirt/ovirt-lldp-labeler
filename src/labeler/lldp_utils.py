@@ -29,12 +29,8 @@ def filter_vlan_tag(tlvs):
     filtered_tlvs = []
     for tlv in tlvs:
         if tlv.type == PORT_VLAN_TYPE and tlv.oui == PORT_VLAN_OUI and tlv.subtype == PORT_VLAN_SUBTYPE:
-            filtered_tlvs.append(tlv.properties)
-    return flat_map(filtered_tlvs)
-
-
-def flat_map(list_to_flat_map):
-    return list(itertools.chain.from_iterable(list_to_flat_map))
+            filtered_tlvs.extend(tlv.properties)
+    return filtered_tlvs
 
 
 def create_label_candidates(tlv_properties):
