@@ -14,6 +14,17 @@ This tool is located in `/usr/share/ovirt-lldp-labeler/`.
 
 Print help with `-h` or `--help` switch.
 
+Service
+-------
+
+The oVirt LLDP labeler service consists of two parts. First is `ovirt-lldp-labeler.service` which runs only one time
+and then dies. Second part is `ovirt-lldp-labeler.timer`, this timer service when started will run periodically
+`ovirt-lldp-labeler.service`. Please note that correct function only the timer has to be in `active` state.
+
+To enable the timer service run `systemctl enable ovirt-lldp-labeler.timer` and
+`systemctl start ovirt-lldp-labeler.timer`. One time only run can be done by either CLI tool or by running
+`systemctl start ovirt-lldp-labeler`.
+
 Configuration
 -------------
 
@@ -65,8 +76,9 @@ Building
 
 For building the project into rpm clone the project `git clone https://github.com/almusil/ovirt-lldp-labeler.git`.
 
-Please note that for update to the latest labeler you need to run `git fetch` and  `git checkout origin/master` inside
-the cloned directory. Then run again the steps below.
+Please note that for update to the latest labeler you need to run `git checkout master` and `git pull` inside
+the cloned directory. Then run again the steps below. In case you are missing the local `master` branch run
+`git checkout -t origin/master -b master`.
 
 And simply run `make rpm`. Please note that for build to work you need to install `rpm-build` package.
 
