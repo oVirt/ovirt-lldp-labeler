@@ -59,8 +59,8 @@ def _get_lldp_for_host(host_id):
 # TODO add diff check for the lldp from slaves
 def _get_lldp_for_bond_slaves(nics_service, nic):
     lldp_list = []
-    for slave in nic.bonding:
-        lldp_list.extend(_get_lldp_for_nic(nics_service.nic_service(slave.id)))
+    for slave in nic.bonding.slaves:
+        lldp_list.extend(_get_lldp_for_nic(nics_service, slave))
     return lldp_list
 
 
