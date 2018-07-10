@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
-VERSION=0.9.6
+VERSION=1.0.0
 NAME=ovirt-lldp-labeler
 GIT_VERSION=$(shell git rev-parse --short HEAD)
 BUILD=build
