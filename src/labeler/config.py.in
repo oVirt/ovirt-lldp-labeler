@@ -26,12 +26,15 @@ _LABELER_SECTION = 'labeler'
 _CLUSTER_CONFIG = 'clusters'
 _API_URL_CONFIG = 'api_url'
 _CA_FILE_CONFIG = 'ca_file'
+_AUTO_BONDING_CONFIG = 'auto_bonding'
+_AUTO_LABELING_CONFIG = 'auto_labeling'
 
 _API_USERNAME = 'username'
 _API_PASSWORD = 'password'
 
 _COMMA_SEPARATOR = ','
 
+_CONFIG_TRUE = 'true'
 
 _config = ConfigParser.ConfigParser()
 _config.read(_LABELER_CONFIG_FILE)
@@ -56,6 +59,14 @@ def get_api_password():
 
 def get_ca_file():
     return _config.get(_LABELER_SECTION, _CA_FILE_CONFIG)
+
+
+def get_auto_bonding():
+    return _config.getboolean(_LABELER_SECTION, _AUTO_BONDING_CONFIG)
+
+
+def get_auto_labeling():
+    return _config.getboolean(_LABELER_SECTION, _AUTO_LABELING_CONFIG)
 
 
 def _split_by_separator(value, separator):
