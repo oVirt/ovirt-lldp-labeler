@@ -61,6 +61,12 @@ _default:_ https://ovirt-engine/ovirt-engine/api
 ca_file:: Path to the custom certificate file. Leave empty if you don't want to use custom certificate. +
 _default:_
 
+auto_bonding:: Boolean value. If set to true the labeler will do auto bonding. +
+_default:_ true
+
+auto_labeling:: Boolean value. If set to true the labeler will do auto labeling. +
+_default:_ true
+
 # ovirt-lldp-labeler.timer
 
 Systemd file used to configure the periodical timer. It is usually located in `/usr/lib/systemd/system/`.
