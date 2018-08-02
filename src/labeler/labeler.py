@@ -15,9 +15,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
-from __future__ import print_function
 
 import config
+import logging
 
 from ovirtsdk4.types import NetworkLabel
 
@@ -62,12 +62,12 @@ def _get_lldp_for_host(host_id, with_bonds):
     return lldps
 
 
-def _get_networks_from_attachments(nic_id_list, attachment_dict):
+def _get_networks_from_attachments(nic_list, attachment_dict):
     networks_service = _get_engine_service().networks_service()
     network_dict = {}
-    for nic_id in nic_id_list:
-        network_attachments = attachment_dict.get(nic_id, [])
-        network_dict.update({nic_id: [networks_service.network_service(attachment.network.id).get() for attachment
+    for nic in nic_list:
+        network_attachments = attachment_dict.get(nic, [])
+        network_dict.update({nic: [networks_service.network_service(attachment.network.id).get() for attachment
                             in network_attachments]})
     return network_dict
 
@@ -75,14 +75,15 @@ def _get_networks_from_attachments(nic_id_list, attachment_dict):
 def _create_new_bonds(bond_dict, attachment_dict, host_id, next_bond_num):
     bonds_to_update = []
     attachments_to_update = []
-    for aggregation_id, nic_id_list in bond_dict.items():
-        updated_nic_id_list = utils.check_bond_slaves_attachments(nic_id_list,
-                                                                  _get_networks_from_attachments(nic_id_list,
-                                                                                                 attachment_dict))
-        bond = utils.create_bond_definition(updated_nic_id_list, next_bond_num)
-        attachments = utils.create_attachment_definition(updated_nic_id_list, next_bond_num, attachment_dict)
+    for aggregation_id, nic_list in bond_dict.items():
+        network_dict = _get_networks_from_attachments(nic_list, attachment_dict)
+        updated_nic_list = utils.filter_bond_slaves_by_attachments(nic_list, network_dict)
+        bond = utils.create_bond_definition(updated_nic_list, next_bond_num)
+        attachments = utils.create_attachment_definition(updated_nic_list, next_bond_num, attachment_dict)
 
         if bond is not None:
+            logging.info('Re-attaching networks: %s to bond %s', ', '.join(
+                network.name for network in utils.create_network_list(updated_nic_list, network_dict)), bond.name)
             bonds_to_update.append(bond)
             attachments_to_update.extend(attachments)
             next_bond_num += 1
@@ -95,7 +96,8 @@ def _create_new_bonds(bond_dict, attachment_dict, host_id, next_bond_num):
 def _get_lldp_for_bond_slaves(nics_service, nic):
     lldp_list = []
     for slave in nic.bonding.slaves:
-        lldp_list.extend(_get_lldp_for_nic(nics_service, slave))
+        nic = nics_service.nic_service(slave.id).get()
+        lldp_list.extend(_get_lldp_for_nic(nics_service, nic))
     return lldp_list
 
 
@@ -103,9 +105,10 @@ def _get_lldp_for_nic(nics_service, nic):
     try:
         nic_service = nics_service.nic_service(nic.id)
         lldp_list = nic_service.link_layer_discovery_protocol_elements_service().list()
+        logging.info('Getting lldp information for nic %s', nic.name)
         return lldp_list
     except api.sdk.Error as ex:
-        print(ex.message)
+        logging.warn(ex.message)
         return []
 
 
@@ -113,12 +116,14 @@ def _get_nic_label_service(host_id, nic_id):
     return _get_host_interfaces_service(host_id).nic_service(nic_id).network_labels_service()
 
 
-def _attach_label(host_id, nic_id, label):
-    _get_nic_label_service(host_id, nic_id).add(NetworkLabel(id=label))
+def _attach_label(host_id, nic, label):
+    logging.info('Attaching label %s to nic %s', label, nic.name)
+    _get_nic_label_service(host_id, nic.id).add(NetworkLabel(id=label))
 
 
-def _detach_label(host_id, nic_id, label):
-    _get_nic_label_service(host_id, nic_id).label_service(label).remove()
+def _detach_label(host_id, nic, label):
+    logging.info('Detaching label %s from nic %s', label, nic.name)
+    _get_nic_label_service(host_id, nic.id).label_service(label).remove()
 
 
 def _is_label_present_on_host(host_id, label):
@@ -126,24 +131,26 @@ def _is_label_present_on_host(host_id, label):
     for nic in nics:
         attached_labels = [attached_label.id for attached_label in _get_nic_label_service(host_id, nic.id).list()]
         if len(attached_labels) > 0 and label in attached_labels:
-            return nic.id
+            return nic
     return None
 
 
-def _create_label_candidates_and_assign(host_id, nic_id, lldps):
+def _create_label_candidates_and_assign(host_id, nic, lldps):
     label_candidates = utils.create_label_candidates(utils.filter_vlan_tag(lldps))
+    logging.info('Created label candidates for nic %s: %s', nic.name, ', '.join(label_candidates))
     for label_candidate in label_candidates:
         nic_with_label = _is_label_present_on_host(host_id, label_candidate)
-        if not (nic_with_label is None or nic_with_label is nic_id):
+        if not (nic_with_label is None or nic_with_label is nic.id):
             _detach_label(host_id, nic_with_label, label_candidate)
-            _attach_label(host_id, nic_id, label_candidate)
+            _attach_label(host_id, nic, label_candidate)
         elif nic_with_label is None:
-            _attach_label(host_id, nic_id, label_candidate)
+            _attach_label(host_id, nic, label_candidate)
 
 
-def _get_bond_slave_network_attachments(host_id, nic_id):
+def _get_bond_slave_network_attachments(host_id, nic):
+    logging.info('Getting attachments for nic %s', nic.name)
     nics_service = _get_host_interfaces_service(host_id)
-    return nics_service.nic_service(nic_id).network_attachments_service().list()
+    return nics_service.nic_service(nic.id).network_attachments_service().list()
 
 
 def _run_bond_definition_for_host(host_id):
@@ -152,9 +159,9 @@ def _run_bond_definition_for_host(host_id):
     lldps = _get_lldp_for_host(host_id, with_bonds=False)
     bond_dict = {}
     attachment_dict = {}
-    for nic_id, lldp in lldps.items():
-        attachment_dict.update({nic_id: _get_bond_slave_network_attachments(host_id, nic_id)})
-        utils.update_bond_dict(bond_dict, lldp, nic_id)
+    for nic, lldp in lldps.items():
+        attachment_dict.update({nic: _get_bond_slave_network_attachments(host_id, nic)})
+        utils.update_bond_dict(bond_dict, lldp, nic)
     _create_new_bonds(bond_dict, attachment_dict, host_id, utils.find_next_bond_num(nic_names))
 
 
@@ -167,8 +174,10 @@ def _run_label_definition_for_host(host_id):
 def run_labeler():
     for host in _get_all_hosts():
         if config.get_auto_bonding():
+            logging.info('Running bond definition for host %s', host.name)
             _run_bond_definition_for_host(host.id)
         if config.get_auto_labeling():
+            logging.info('Running labeling for host %s', host.name)
             _run_label_definition_for_host(host.id)
 
 

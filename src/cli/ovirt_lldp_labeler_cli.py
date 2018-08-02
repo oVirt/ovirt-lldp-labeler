@@ -17,8 +17,9 @@
 # Refer to the README and COPYING files for full details of the license
 from __future__ import print_function
 
-import sys
 import getopt
+import logging
+import sys
 
 import labeler.labeler as labeler
 
@@ -27,6 +28,7 @@ _ARGUMENTS_LONG = ['help', 'username=', 'password=']
 
 
 def main(args):
+    logging.basicConfig(level=logging.INFO)
     if len(args) > 0:
         _parse_arguments(args)
     else:

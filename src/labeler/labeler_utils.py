@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # Refer to the README and COPYING files for full details of the license
+import logging
 import re
 
 from ovirtsdk4.types import Bonding, HostNic, Option
@@ -91,52 +92,64 @@ def find_next_bond_num(nic_names):
     return int(bond_names[0].strip('bond')) + 1 if len(bond_names) > 0 else 0
 
 
-def update_bond_dict(bond_dict, tlvs, nic_id):
+def update_bond_dict(bond_dict, tlvs, nic):
     link_aggregation_properties = filter_link_aggregation(tlvs)
     aggregation_port_id = (prop.value for prop in link_aggregation_properties if
                            prop.name == PROPERTY_LINK_AGGREGATION_ID).next()
     if aggregation_port_id is None:
         return
+    logging.info('Found active port aggregation group %s for nic %s', aggregation_port_id, nic.name)
     slave_list = bond_dict.get(aggregation_port_id)
     if slave_list is None:
-        bond_dict.update({aggregation_port_id: [nic_id]})
+        bond_dict.update({aggregation_port_id: [nic]})
     else:
-        slave_list.append(nic_id)
+        slave_list.append(nic)
 
 
-def create_bond_definition(nic_id_list, next_bond_num):
-    slaves_list = [HostNic(id=nic_id) for nic_id in nic_id_list]
+def create_bond_definition(nic_list, next_bond_num):
+    slaves_list = [HostNic(id=nic.id) for nic in nic_list]
     if len(slaves_list) > 1:
         bonding = Bonding(options=[Option(name=BOND_MODE_OPTION_NAME, value=BOND_MODE_OPTION_VALUE)],
                           slaves=slaves_list)
-        return HostNic(name=BOND_PREFIX + str(next_bond_num), bonding=bonding)
+        bond_name = BOND_PREFIX + str(next_bond_num)
+        logging.info('Creating bond %s with slaves: %s', bond_name, ', '.join([nic.name for nic in nic_list]))
+        return HostNic(name=bond_name, bonding=bonding)
     else:
         return None
 
 
-def create_attachment_definition(nic_id_list, next_bond_num, attachment_dict):
+def create_network_list(nic_list, network_dict):
+    network_list = []
+    for nic in nic_list:
+        networks = network_dict.get(nic, [])
+        network_list.extend(networks)
+    return network_list
+
+
+def create_attachment_definition(nic_list, next_bond_num, attachment_dict):
     attachments_list = []
-    for nic_id in nic_id_list:
-        attachments = attachment_dict.get(nic_id, [])
+    bond_name = BOND_PREFIX + str(next_bond_num)
+    for nic in nic_list:
+        attachments = attachment_dict.get(nic, [])
         for attachment in attachments:
-            attachment.host_nic = HostNic(name=BOND_PREFIX + str(next_bond_num))
+            attachment.host_nic = HostNic(name=bond_name)
             attachments_list.append(attachment)
     return attachments_list
 
 
-def check_bond_slaves_attachments(nic_id_list, network_dict):
-    checked_nic_id_list = []
-    has_non_vlan_network = False
-    for nic_id in nic_id_list:
-        networks = network_dict.get(nic_id, None)
-        if networks is not None and not _contains_managment_network(networks):
+def filter_bond_slaves_by_attachments(nic_list, network_dict):
+    checked_nic_list = []
+    bond_has_non_vlan_network_already = False
+    for nic in nic_list:
+        networks = network_dict.get(nic)
+        if networks and not _contains_managment_network(networks):
             contains_non_vlan_network = _contains_non_vlan_network(networks)
-            if contains_non_vlan_network and not has_non_vlan_network:
-                has_non_vlan_network = True
-                checked_nic_id_list.append(nic_id)
+            if contains_non_vlan_network and not bond_has_non_vlan_network_already:
+                bond_has_non_vlan_network_already = True
+                checked_nic_list.append(nic)
             elif not contains_non_vlan_network:
-                checked_nic_id_list.append(nic_id)
-    return checked_nic_id_list
+                checked_nic_list.append(nic)
+    return checked_nic_list
 
 
 def _contains_managment_network(networks):
