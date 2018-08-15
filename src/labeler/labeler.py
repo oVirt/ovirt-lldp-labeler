@@ -56,9 +56,9 @@ def _get_lldp_for_host(host_id, with_bonds):
     nic_list = utils.filter_out_bond_slaves(nic_list_without_vlan)
     for nic in nic_list:
         if nic.bonding is None:
-            lldps.update({nic.id: _get_lldp_for_nic(nics_service, nic)})
+            lldps.update({nic: _get_lldp_for_nic(nics_service, nic)})
         elif with_bonds:
-            lldps.update({nic.id: _get_lldp_for_bond_slaves(nics_service, nic)})
+            lldps.update({nic: _get_lldp_for_bond_slaves(nics_service, nic)})
     return lldps
 
 

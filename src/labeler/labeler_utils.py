@@ -94,8 +94,9 @@ def find_next_bond_num(nic_names):
 
 def update_bond_dict(bond_dict, tlvs, nic):
     link_aggregation_properties = filter_link_aggregation(tlvs)
-    aggregation_port_id = (prop.value for prop in link_aggregation_properties if
-                           prop.name == PROPERTY_LINK_AGGREGATION_ID).next()
+    aggregation_port_id = next(
+        (prop.value for prop in link_aggregation_properties if
+         prop.name == PROPERTY_LINK_AGGREGATION_ID), None)
     if aggregation_port_id is None:
         return
     logging.info('Found active port aggregation group %s for nic %s', aggregation_port_id, nic.name)
