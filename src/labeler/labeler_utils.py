@@ -40,7 +40,8 @@ OVIRT_MANAGMENT_NETWORK = "ovirtmgmt"
 def filter_vlan_tag(tlvs):
     filtered_tlvs = []
     for tlv in tlvs:
-        if tlv.type == PORT_VLAN_TYPE and tlv.oui == PORT_VLAN_OUI and tlv.subtype == PORT_VLAN_SUBTYPE:
+        if (tlv.type == PORT_VLAN_TYPE and tlv.oui == PORT_VLAN_OUI
+                and tlv.subtype == PORT_VLAN_SUBTYPE):
             filtered_tlvs.extend(tlv.properties)
     return filtered_tlvs
 
@@ -71,20 +72,26 @@ def filter_out_bond_slaves(nic_list):
 
 def filter_link_aggregation(tlvs):
     for tlv in tlvs:
-        if tlv.type == LINK_AGGREGATION_TYPE and tlv.oui == LINK_AGGREGATION_OUI \
-                and tlv.subtype == LINK_AGGREGATION_SUBTYPE:
+        if (tlv.type == LINK_AGGREGATION_TYPE
+                and tlv.oui == LINK_AGGREGATION_OUI
+                and tlv.subtype == LINK_AGGREGATION_SUBTYPE):
             return tlv.properties
     return []
 
 
 def _is_currently_aggregated(properties):
-    prop_val = [prop.value for prop in properties if (prop.name == PROPERTY_LINK_AGGREGATION_AGGREGATED
-                                                      and prop.value == PROPERTY_TRUE)]
+    prop_val = [
+        prop.value for prop in properties
+        if (prop.name == PROPERTY_LINK_AGGREGATION_AGGREGATED
+            and prop.value == PROPERTY_TRUE)
+    ]
     return len(prop_val) > 0
 
 
 def find_next_bond_num(nic_names):
-    bond_names = [nic_name for nic_name in nic_names if re.search(r'bond.*', nic_name)]
+    bond_names = [
+        nic_name for nic_name in nic_names if re.search(r'bond.*', nic_name)
+    ]
     bond_names.sort()
     return int(bond_names[0].strip('bond')) + 1 if len(bond_names) > 0 else 0
 
@@ -96,7 +103,8 @@ def update_bond_dict(bond_dict, tlvs, nic):
          prop.name == PROPERTY_LINK_AGGREGATION_ID), None)
     if aggregation_port_id is None:
         return
-    logging.info('Found active port aggregation group %s for nic %s', aggregation_port_id, nic.name)
+    logging.info('Found active port aggregation group %s for nic %s',
+                 aggregation_port_id, nic.name)
     slave_list = bond_dict.get(aggregation_port_id)
     if slave_list is None:
         bond_dict.update({aggregation_port_id: [nic]})
@@ -107,10 +115,15 @@ def update_bond_dict(bond_dict, tlvs, nic):
 def create_bond_definition(nic_list, next_bond_num):
     slaves_list = [HostNic(id=nic.id) for nic in nic_list]
     if len(slaves_list) > 1:
-        bonding = Bonding(options=[Option(name=BOND_MODE_OPTION_NAME, value=BOND_MODE_OPTION_VALUE)],
-                          slaves=slaves_list)
+        bonding = Bonding(
+            options=[
+                Option(
+                    name=BOND_MODE_OPTION_NAME, value=BOND_MODE_OPTION_VALUE)
+            ],
+            slaves=slaves_list)
         bond_name = BOND_PREFIX + str(next_bond_num)
-        logging.info('Creating bond %s with slaves: %s', bond_name, ', '.join([nic.name for nic in nic_list]))
+        logging.info('Creating bond %s with slaves: %s', bond_name,
+                     ', '.join([nic.name for nic in nic_list]))
         return HostNic(name=bond_name, bonding=bonding)
     else:
         return None
@@ -142,7 +155,8 @@ def filter_bond_slaves_by_attachments(nic_list, network_dict):
         networks = network_dict.get(nic)
         if networks and not _contains_managment_network(networks):
             contains_non_vlan_network = _contains_non_vlan_network(networks)
-            if contains_non_vlan_network and not bond_has_non_vlan_network_already:
+            if (contains_non_vlan_network
+                    and not bond_has_non_vlan_network_already):
                 bond_has_non_vlan_network_already = True
                 checked_nic_list.append(nic)
             elif not contains_non_vlan_network:
@@ -151,7 +165,10 @@ def filter_bond_slaves_by_attachments(nic_list, network_dict):
 
 
 def _contains_managment_network(networks):
-    return len([network for network in networks if network.name == OVIRT_MANAGMENT_NETWORK]) > 0
+    return len([
+        network for network in networks
+        if network.name == OVIRT_MANAGMENT_NETWORK
+    ]) > 0
 
 
 def _contains_non_vlan_network(networks):

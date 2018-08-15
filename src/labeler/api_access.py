@@ -20,8 +20,4 @@ connection = None
 def init_connection(url, username, password, ca_file):
     global connection
     connection = sdk.Connection(
-        url=url,
-        username=username,
-        password=password,
-        ca_file=ca_file
-    )
+        url=url, username=username, password=password, ca_file=ca_file)

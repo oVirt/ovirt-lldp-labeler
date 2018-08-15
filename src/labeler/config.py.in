@@ -39,7 +39,8 @@ _config.read(_CREDENTIALS_CONFIG_FILE)
 
 
 def get_clusters_from_config():
-    return _split_by_separator(_config.get(_LABELER_SECTION, _CLUSTER_CONFIG), _COMMA_SEPARATOR)
+    return _split_by_separator(
+        _config.get(_LABELER_SECTION, _CLUSTER_CONFIG), _COMMA_SEPARATOR)
 
 
 def get_api_url():
