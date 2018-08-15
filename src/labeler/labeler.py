@@ -19,9 +19,8 @@ import logging
 from ovirtsdk4.types import NetworkLabel
 
 import api_access as api
+import constants as const
 import labeler_utils as utils
-
-CLUSTER_QUERY_NAME = 'cluster'
 
 
 def _get_engine_service():
@@ -31,7 +30,7 @@ def _get_engine_service():
 def _get_all_hosts(filtered_by_cluster=True):
     filter_query = ''
     if filtered_by_cluster:
-        filter_query = utils.get_or_query(CLUSTER_QUERY_NAME,
+        filter_query = utils.get_or_query(const.CLUSTER_QUERY_NAME,
                                           config.get_clusters_from_config())
 
     return _get_engine_service().hosts_service().list(search=filter_query)
@@ -182,7 +181,7 @@ def _run_bond_definition_for_host(host_id):
     for nic, lldp in lldps.items():
         attachment_dict.update({
             nic:
-            _get_bond_slave_network_attachments(host_id, nic)
+                _get_bond_slave_network_attachments(host_id, nic)
         })
         utils.update_bond_dict(bond_dict, lldp, nic)
     _create_new_bonds(bond_dict, attachment_dict, host_id,
