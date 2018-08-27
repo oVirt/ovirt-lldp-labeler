@@ -56,3 +56,4 @@ The oVirt Link Layer Discovery Protocol labeler.
 %{_unitdir}/ovirt-lldp-labeler.timer
 %{_unitdir}/ovirt-lldp-labeler.service
 %license LICENSE
+%doc README.adoc

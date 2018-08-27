@@ -75,6 +75,7 @@ dist: build
 
 	cp LICENSE $(BUILD)/$(DIST_DIR)/
 	cp AUTHORS $(BUILD)/$(DIST_DIR)/
+	cp README.adoc $(BUILD)/$(DIST_DIR)/
 	cp ovirt-lldp-labeler.spec.in $(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
 	sed -i \
     		-e s/@RELEASE@/$(RELEASE)/ \
