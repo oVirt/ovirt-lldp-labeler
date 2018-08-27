@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-VERSION=1.0.1SNAPSHOT
 NAME=ovirt-lldp-labeler
+VERSION=1.0.1
 GIT_VERSION=$(shell git rev-parse --short HEAD)
+RELEASE=$(GIT_VERSION)
 BUILD=build
 DIST_DIR=$(NAME)-$(VERSION)
 DIST_FILE=$(NAME)-$(VERSION).tar.gz
@@ -76,7 +77,7 @@ dist: build
 	cp AUTHORS $(BUILD)/$(DIST_DIR)/
 	cp ovirt-lldp-labeler.spec.in $(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
 	sed -i \
-    		-e s/@GIT_VERSION@/$(GIT_VERSION)/ \
+    		-e s/@RELEASE@/$(RELEASE)/ \
     		-e s/@VERSION@/$(VERSION)/ \
     		$(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
 

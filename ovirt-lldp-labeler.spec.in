@@ -15,19 +15,19 @@
 
 Name:           ovirt-lldp-labeler
 Version:        @VERSION@
-Release:        @GIT_VERSION@%{?dist}
+Release:        @RELEASE@%{?dist}
 Summary:        The oVirt Link Layer Discovery Protocol labeler
 License:        ASL 2.0
 BuildArch:      noarch
-URL:            https://github.com/almusil/ovirt-lldp-labeler
-Source0:        %{name}-%{version}.tar.gz
+URL:            https://github.com/almusil/%{name}
+Source0:        https://github.com/almusil/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 Requires: python-ovirt-engine-sdk4 >= 4.2.0
 
 BuildRequires: python
 
 %prep
-%setup -q
+%autosetup
 
 %build
 
