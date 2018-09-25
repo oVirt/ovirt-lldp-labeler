@@ -89,4 +89,3 @@ rpm: dist
 	mkdir -p $(RPM_SOURCE)
 	cp $(DIST_FILE) $(RPM_SOURCE)
 	rpmbuild -ta $(DIST_FILE)
-	rm -rf $(DIST_FILE)
