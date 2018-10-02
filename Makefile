@@ -14,8 +14,11 @@
 #
 NAME=ovirt-lldp-labeler
 VERSION=1.0.1
+
 GIT_VERSION=$(shell git rev-parse --short HEAD)
-RELEASE=$(GIT_VERSION)
+TIMESTAMP:=$(shell date +'%Y%m%d%H%M%S')
+RELEASE=0.$(TIMESTAMP).git$(GIT_VERSION)
+
 BUILD=build
 DIST_DIR=$(NAME)-$(VERSION)
 DIST_FILE=$(NAME)-$(VERSION).tar.gz
