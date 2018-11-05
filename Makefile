@@ -13,11 +13,11 @@
 # limitations under the License.
 #
 NAME=ovirt-lldp-labeler
-VERSION=1.0.1
+VERSION=1.0.2
 
 GIT_VERSION=$(shell git rev-parse --short HEAD)
 TIMESTAMP:=$(shell date +'%Y%m%d%H%M%S')
-RELEASE=1
+RELEASE=0.$(TIMESTAMP).git$(GIT_VERSION)
 
 BUILD=build
 DIST_DIR=$(NAME)-$(VERSION)
