@@ -25,6 +25,7 @@ Source0:        %{name}-%{version}.tar.gz
 Requires: python-ovirt-engine-sdk4 >= 4.2.0
 
 BuildRequires: python
+BuildRequires: systemd
 
 %prep
 %autosetup
