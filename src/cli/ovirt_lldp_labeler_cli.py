@@ -64,7 +64,7 @@ def _handle_help():
 
 
 def _handle_err():
-    print("Use -h or --help for more information")
+    print('Use -h or --help for more information')
     sys.exit(1)
 
 

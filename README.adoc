@@ -80,7 +80,7 @@ _default:_ 1h
 Building
 --------
 
-For building the project into rpm clone the project `git clone https://github.com/almusil/ovirt-lldp-labeler.git`.
+For building the project into rpm clone the project `git clone https://gerrit.ovirt.org/ovirt-lldp-labeler`.
 
 Please note that for update to the latest labeler you need to run `git checkout master` and `git pull` inside
 the cloned directory. Then run again the steps below. In case you are missing the local `master` branch run
