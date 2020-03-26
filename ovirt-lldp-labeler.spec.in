@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,12 @@
 # limitations under the License.
 #
 
+%if 0%{?fedora} >= 30 || 0%{?rhel} >= 8
+%global required_python python3
+%else
+%global required_python python
+%endif
+
 Name:           ovirt-lldp-labeler
 Version:        @VERSION@
 Release:        @RELEASE@%{?dist}
@@ -22,9 +28,9 @@ BuildArch:      noarch
 URL:            https://gerrit.ovirt.org/#/admin/projects/ovirt-lldp-labeler
 Source0:        %{name}-%{version}.tar.gz
 
-Requires: python-ovirt-engine-sdk4 >= 4.2.0
+Requires: %{required_python}-ovirt-engine-sdk4 >= 4.2.0
 
-BuildRequires: python
+BuildRequires: %{required_python}
 BuildRequires: systemd
 
 %prep
