@@ -22,6 +22,7 @@ RELEASE=0.$(TIMESTAMP).git$(GIT_VERSION)
 BUILD=build
 DIST_DIR=$(NAME)-$(VERSION)
 DIST_FILE=$(NAME)-$(VERSION).tar.gz
+PYTHON ?= python3
 RPM_SOURCE=$(shell rpm --eval %_sourcedir)
 
 all:
@@ -29,8 +30,8 @@ all:
 
 
 install:
-	python -m compileall .
-	python -O -m compileall .
+	$(PYTHON) -m compileall .
+	$(PYTHON) -O -m compileall .
 	install -d $(DESTDIR)/etc/$(NAME)/conf.d
 	install -m 644 -t $(DESTDIR)/etc/$(NAME)/conf.d/ etc/ovirt-lldp-labeler.conf
 	install -m 600 -t $(DESTDIR)/etc/$(NAME)/conf.d/ etc/ovirt-lldp-credentials.conf
