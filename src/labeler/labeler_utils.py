@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import re
 
 from ovirtsdk4.types import Bonding, HostNic, Option
 
-import constants as const
+from . import constants as const
 
 
 def filter_vlan_tag(tlvs):

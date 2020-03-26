@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import config
 import logging
 
 from ovirtsdk4.types import NetworkLabel
 
-import api_access as api
-import constants as const
-import labeler_utils as utils
+from . import api_access as api
+from . import config
+from . import constants as const
+from . import labeler_utils as utils
 
 
 def _get_engine_service():
