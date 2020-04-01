@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
 # limitations under the License.
 #
 NAME=ovirt-lldp-labeler
-VERSION=1.0.2
+VERSION=1.0.3
 
 GIT_VERSION=$(shell git rev-parse --short HEAD)
 TIMESTAMP:=$(shell date +'%Y%m%d%H%M%S')
-RELEASE=2
+RELEASE=0.$(TIMESTAMP).git$(GIT_VERSION)
 
 BUILD=build
 DIST_DIR=$(NAME)-$(VERSION)
