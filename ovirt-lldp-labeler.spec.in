@@ -65,3 +65,8 @@ The oVirt Link Layer Discovery Protocol labeler.
 %{_unitdir}/ovirt-lldp-labeler.service
 %license LICENSE
 %doc README.adoc
+
+%changelog
+* Wed Apr 01 2020 Ales Musil <amusil@redhat.com> - 1.0.2
+- Fix support for python3
+- Added builds for el8 and fc30
