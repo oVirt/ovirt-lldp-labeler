@@ -1,4 +1,4 @@
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2020 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,6 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/usr/bin/python /usr/share/ovirt-lldp-labeler/ovirt_lldp_labeler_cli.py
+ExecStart=/usr/bin/@PYTHON_EXECUTABLE@ /usr/share/ovirt-lldp-labeler/ovirt_lldp_labeler_cli.py
 [Install]
 WantedBy=multi-user.target
