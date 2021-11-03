@@ -1,6 +1,8 @@
 oVirt Link Layer Discovery Protocol labeler
 ===========================================
 
+image:https://copr.fedorainfracloud.org/coprs/ovirt/ovirt-master-snapshot/package/ovirt-lldp-labeler/status_image/last_build.png[link="https://copr.fedorainfracloud.org/coprs/ovirt/ovirt-master-snapshot/package/ovirt-lldp-labeler/"]
+
 oVirt LLDP labeler is a service which periodically checks LLDP information for configured clusters. Based on this
 information the labeler tries to find VLAN tag and add label to the corresponding interface. This is standalone service
 which can run on any machine with python oVirt SDK installed.
