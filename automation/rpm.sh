@@ -12,5 +12,3 @@ cp ovirt-lldp-labeler-*.tar.gz $EXPORT_DIR/
 
 cp ~/rpmbuild/RPMS/noarch/ovirt-lldp-labeler-*.noarch.rpm $EXPORT_DIR/
 cp ~/rpmbuild/SRPMS/ovirt-lldp-labeler-*.src.rpm $EXPORT_DIR/
-
-createrepo_c "$EXPORT_DIR"
