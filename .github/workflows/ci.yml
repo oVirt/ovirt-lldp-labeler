@@ -1,9 +1,7 @@
-name: CI
+name: Build RPMs
 on:
   push:
-    branches:
-      - master
-      - ovirt-4.4
+    branches: [ master, ovirt-4.4 ]
   pull_request:
 env:
   EXPORT_DIR: exported-artifacts
@@ -11,20 +9,21 @@ jobs:
   rpm:
     runs-on: ubuntu-latest
     name: rpm-${{ matrix.distro }}
-    container: quay.io/centos/centos:${{ matrix.tag }}
+    container: quay.io/ovirt/buildcontainer:${{ matrix.tag }}
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - distro: el8stream
-            tag: stream8
-          - distro: el9stream
-            tag: stream9
+          - distro: centos-stream-9
+            tag: el9stream
+          - distro: centos-stream-10
+            tag: el10stream
     steps:
-    - uses: actions/checkout@v2
+    - uses: ovirt/checkout-action@main
     - name: Install dependencies
       run: dnf -y install createrepo_c git make python3-devel rpm-build systemd
     - name: Build RPMs
       run: ./automation/rpm.sh
-    - uses: ovirt/upload-rpms-action@v2
+    - uses: ovirt/upload-rpms-action@main
       with:
         directory: ${{ env.EXPORT_DIR }}

@@ -18,3 +18,8 @@ maven-eclipse.xml
 *.pyo
 *.pyc
 __pycache__
+
+
+# Build files
+###########################
+build
