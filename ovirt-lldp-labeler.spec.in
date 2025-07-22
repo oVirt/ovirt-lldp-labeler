@@ -29,10 +29,10 @@ URL:            https://gerrit.ovirt.org/#/admin/projects/ovirt-lldp-labeler
 Source0:        %{name}-%{version}.tar.gz
 
 Requires: %{required_python}-ovirt-engine-sdk4 >= 4.2.0
-Requires: %{required_python}-six
 
 BuildRequires: %{required_python}
 BuildRequires: systemd
+BuildRequires: make
 
 %prep
 %autosetup
