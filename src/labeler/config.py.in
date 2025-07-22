@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import six.moves.configparser
+import configparser
 
 _LABELER_CONFIG_FILE = '@LABELER_CONFIG@'
 _CREDENTIALS_CONFIG_FILE = '@LABELER_CONFIG_CREDENTIALS@'
@@ -33,7 +33,7 @@ _COMMA_SEPARATOR = ','
 
 _CONFIG_TRUE = 'true'
 
-_config = six.moves.configparser.ConfigParser()
+_config = configparser.ConfigParser()
 _config.read(_LABELER_CONFIG_FILE)
 _config.read(_CREDENTIALS_CONFIG_FILE)
 
