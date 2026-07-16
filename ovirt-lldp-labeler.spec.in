@@ -21,7 +21,7 @@
 
 Name:           ovirt-lldp-labeler
 Version:        @VERSION@
-Release:        @RELEASE@%{?dist}
+Release:        @PACKAGE_RPM_RELEASE@%{?release_suffix}%{?dist}
 Summary:        The oVirt Link Layer Discovery Protocol labeler
 License:        ASL 2.0
 BuildArch:      noarch

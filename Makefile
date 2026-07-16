@@ -14,16 +14,16 @@
 #
 NAME=ovirt-lldp-labeler
 VERSION=1.0.3
-
-GIT_VERSION=$(shell git rev-parse --short HEAD)
-TIMESTAMP:=$(shell date +'%Y%m%d%H%M%S')
-RELEASE=0.$(TIMESTAMP).git$(GIT_VERSION)
+PACKAGE_RPM_RELEASE ?= 0.master
 
 BUILD=build
 DIST_DIR=$(NAME)-$(VERSION)
 DIST_FILE=$(NAME)-$(VERSION).tar.gz
 PYTHON ?= python3
-RPM_SOURCE=$(shell rpm --eval %_sourcedir)
+
+TMPREPOS = tmp.repos
+RPMBUILD_ARGS := --define="_topdir $(CURDIR)/$(TMPREPOS)"
+RPMBUILD_ARGS += $(if $(RELEASE_SUFFIX),--define="release_suffix $(RELEASE_SUFFIX)")
 
 all:
 	@echo "Usage is make rpm"
@@ -83,14 +83,19 @@ dist: build
 	cp README.adoc $(BUILD)/$(DIST_DIR)/
 	cp ovirt-lldp-labeler.spec.in $(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
 	sed -i \
-    		-e s/@RELEASE@/$(RELEASE)/ \
-    		-e s/@VERSION@/$(VERSION)/ \
-    		$(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
+		-e s/@PACKAGE_RPM_RELEASE@/$(PACKAGE_RPM_RELEASE)/ \
+		-e s/@VERSION@/$(VERSION)/ \
+		$(BUILD)/$(DIST_DIR)/ovirt-lldp-labeler.spec
 
 	tar -zcf $(DIST_FILE) -C $(BUILD) $(DIST_DIR)
 	make clean-build
 
 rpm: dist
-	mkdir -p $(RPM_SOURCE)
-	cp $(DIST_FILE) $(RPM_SOURCE)
-	rpmbuild -ta $(DIST_FILE)
+	rm -rf $(TMPREPOS)
+	mkdir -vp $(TMPREPOS)/{SPECS,RPMS,SRPMS,SOURCES}
+	cp $(DIST_FILE) $(TMPREPOS)/SOURCES/
+	rpmbuild $(RPMBUILD_ARGS) -ts $(DIST_FILE)
+	rpmbuild $(RPMBUILD_ARGS) --rebuild $(TMPREPOS)/SRPMS/*.src.rpm
+	@echo
+	@echo "rpm available at '$(TMPREPOS)'"
+	@echo
